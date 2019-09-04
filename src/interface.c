@@ -4,7 +4,7 @@
  * @File name: 
  * @Version: 
  * @Date: 2019-08-31 19:08:01 -0700
- * @LastEditTime: 2019-09-04 09:36:24 -0700
+ * @LastEditTime: 2019-09-04 15:05:38 -0700
  * @LastEditors: 
  * @Description: 
  */
@@ -20,7 +20,41 @@ GtkWidget *CreateS(GtkWidget *window);
 static gboolean DropDocument();
 static void ReceiveDrop(GtkWidget *widget, GdkDragContext *context,
                         gint x, gint y, GtkSelectionData *data, guint info, guint time, gpointer user_data);
-
+/**
+ * @Author: 邓方晴
+ * @Description: 获得当前系统时间，返回字符串
+ * @Param: 
+ * @Return: 
+ * @Throw: 
+ */
+int getThisTime()
+{
+    time_t now;
+    struct tm *l_time;
+    now = time((time_t *)NULL);
+    l_time = localtime(&now); //取本地时间
+    return l_time->tm_sec;
+}
+/**
+ * @Author: hhz
+ * @Description: 窗口抖动
+ * @Param: 
+ * @Return: 
+ * @Throw: 
+ */
+void SwitchWindow(GtkMenuItem *menuitem, gpointer data, gpointer window)
+{
+    gint x, y, flag = 0;
+    gtk_window_get_position(window, &x, &y);
+    
+    x = x + 50;
+    y = y + 50;
+    gtk_window_move(window, x, y);
+    
+    x = x - 40;
+    y = y - 40;
+    gtk_window_move(window, x, y);
+}
 /**
  * @Author: 王可欣 何禾子
  * @Description: 好友列表（主界面）
@@ -98,8 +132,7 @@ GtkWidget *CreateMainWindow(void)
     gtk_container_add(GTK_CONTAINER(MainBox), align);
 
     listsep = gtk_hseparator_new();
-    gtk_box_pack_start(GTK_BOX(MainBox),listsep, FALSE, FALSE, 1);
-
+    gtk_box_pack_start(GTK_BOX(MainBox), listsep, FALSE, FALSE, 1);
 
     GtkWidget *notebook;
     GtkWidget *friendlabel;
@@ -108,17 +141,17 @@ GtkWidget *CreateMainWindow(void)
     GtkWidget *page;
     //GtkWidget *page1;
     notebook = gtk_notebook_new();
-    gtk_box_pack_start(GTK_BOX(MainBox), notebook, FALSE, FALSE,1);
+    gtk_box_pack_start(GTK_BOX(MainBox), notebook, FALSE, FALSE, 1);
     //好友列表
-    page = gtk_vbox_new(FALSE,0);
+    page = gtk_vbox_new(FALSE, 0);
     FriendBox = gtk_vbox_new(FALSE, 0);
     FriendBox = CreateFriendlist(&page);
     gtk_widget_set_size_request(GTK_BOX(FriendBox), 250, 480);
-    gtk_box_pack_start(GTK_BOX(page),FriendBox, FALSE, FALSE, 1);
+    gtk_box_pack_start(GTK_BOX(page), FriendBox, FALSE, FALSE, 1);
     friendlabel = gtk_label_new("好友列表");
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),page, friendlabel);
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page, friendlabel);
     //群聊列表
-    page = gtk_vbox_new(FALSE,0);
+    page = gtk_vbox_new(FALSE, 0);
     // GroupBox = gtk_vbox_new(FALSE, 0);
     // GroupBox = CreateGrouplist(&page1);
     // gtk_widget_set_size_request(GTK_BOX(GroupBox), 250, 480);
@@ -128,8 +161,7 @@ GtkWidget *CreateMainWindow(void)
     g_signal_connect(G_OBJECT(GroupBox), "clicked",
                      G_CALLBACK(ClickedGroup), (gpointer)MainWindow);
     grouplabel = gtk_label_new("群聊列表");
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook),page, grouplabel);
-    
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page, grouplabel);
 
     //工具栏
 
@@ -165,7 +197,7 @@ GtkWidget *CreateTalkWindow(char *name)
     gtk_window_set_title(GTK_WINDOW(TalkWindow), name);
 
     gtk_window_set_default_size(GTK_WINDOW(TalkWindow), 800, 500);
-    gtk_window_set_position(GTK_WINDOW(TalkWindow),GTK_WIN_POS_CENTER);
+    gtk_window_set_position(GTK_WINDOW(TalkWindow), GTK_WIN_POS_CENTER);
     gtk_container_set_border_width(GTK_CONTAINER(TalkWindow), 10);
 
     hPaned = gtk_hpaned_new();
@@ -244,7 +276,7 @@ GtkWidget *CreateSendToolbar(GtkWidget *window)
 {
 
     GtkWidget *toolbar;
-    GtkWidget *StickerIcon, *DocuIcon, *RecIcon;
+    GtkWidget *StickerIcon, *DocuIcon, *RecIcon, *SwitchIcon;
     GtkWidget *sticker;
     GtkWidget *record;
     GtkToolItem *OpenDocu;
@@ -253,6 +285,7 @@ GtkWidget *CreateSendToolbar(GtkWidget *window)
     StickerIcon = gtk_image_new_from_file("./bin/pic/pic.png");
     DocuIcon = gtk_image_new_from_file("./bin/pic/document.png");
     RecIcon = gtk_image_new_from_file("./bin/pic/record.png");
+    SwitchIcon = gtk_image_new_from_file("./bin/pic/switchWindow.png");
     gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
 
     sticker = gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "", "发送表情", "Private", StickerIcon,
@@ -261,6 +294,8 @@ GtkWidget *CreateSendToolbar(GtkWidget *window)
                                        GTK_SIGNAL_FUNC(OpenSelectDocument), NULL);
     record = gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "", "消息记录", "Private", RecIcon,
                                      GTK_SIGNAL_FUNC(CheckMessageLog), NULL);
+    record = gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "", "窗口抖动", "Private", SwitchIcon,
+                                     GTK_SIGNAL_FUNC(SwitchWindow), (gpointer)window);
 
     return toolbar;
 }
